@@ -32,7 +32,7 @@ public:
     Vec3<T> operator - () const { return Vec3<T>(-x, -y, -z); } 
     T length2() const { return x * x + y * y + z * z; } 
     T length() const { return sqrt(length2()); } 
-    friend std::ostream & operator << (std::ostream &os, const Vec3<T> &v) 
+    friend ostream & operator << (ostream &os, const Vec3<T> &v) 
     { 
         os << "[" << v.x << " " << v.y << " " << v.z << "]"; 
         return os; 
@@ -55,9 +55,13 @@ public:
         const float &refl = 0, 
         const float &transp = 0, 
         const Vec3f &ec = 0) : 
-        center(c), radius(r), radius2(r * r), surfaceColor(sc), emissionColor(ec), 
-        transparency(transp), reflection(refl) 
-    { /* empty */ } 
+        center(c),
+        radius(r),
+        radius2(r * r),
+        surfaceColor(sc),
+        emissionColor(ec), 
+        transparency(transp), 
+        reflection(refl) {} 
 
     bool intersect(const Vec3f &rayorig, const Vec3f &raydir, float &t0, float &t1) const 
     { 
@@ -86,10 +90,10 @@ float mix(const float &a, const float &b, const float &mix)
 Vec3f trace( 
     const Vec3f &rayorig, 
     const Vec3f &raydir, 
-    const std::vector<Sphere> &spheres, 
+    const vector<Sphere> &spheres, 
     const int &depth) 
 { 
-    //if (raydir.length() != 1) std::cerr << "Error " << raydir << std::endl;
+    //if (raydir.length() != 1) cerr << "Error " << raydir << endl;
     float tnear = INFINITY; 
     const Sphere* sphere = NULL; 
     // find intersection of this ray with the sphere in the scene
@@ -158,7 +162,7 @@ Vec3f trace(
                     } 
                 } 
                 surfaceColor += sphere->surfaceColor * transmission * 
-                std::max(float(0), nhit.dot(lightDirection)) * spheres[i].emissionColor; 
+                max(float(0), nhit.dot(lightDirection)) * spheres[i].emissionColor; 
             } 
         } 
     } 
@@ -167,7 +171,7 @@ Vec3f trace(
 } 
  
 
-void render(const std::vector<Sphere> &spheres) 
+void render(const vector<Sphere> &spheres) 
 { 
     unsigned width = 640, height = 480; 
     Vec3f *image = new Vec3f[width * height], *pixel = image; 
@@ -185,12 +189,12 @@ void render(const std::vector<Sphere> &spheres)
         } 
     } 
     // Save result to a PPM image (keep these flags if you compile under Windows)
-    std::ofstream ofs("./rt.pnm", std::ios::out | std::ios::binary); 
+    ofstream ofs("./rt.pnm", ios::out | ios::binary); 
     ofs << "P6\n" << width << " " << height << "\n255\n"; 
     for (unsigned i = 0; i < width * height; ++i) { 
-        ofs << (unsigned char)(std::min(float(1), image[i].x) * 255) << 
-               (unsigned char)(std::min(float(1), image[i].y) * 255) << 
-               (unsigned char)(std::min(float(1), image[i].z) * 255); 
+        ofs << (unsigned char)(min(float(1), image[i].x) * 255) << 
+               (unsigned char)(min(float(1), image[i].y) * 255) << 
+               (unsigned char)(min(float(1), image[i].z) * 255); 
     } 
     ofs.close(); 
     delete [] image; 
@@ -199,7 +203,7 @@ void render(const std::vector<Sphere> &spheres)
 int main(int argc, char **argv) 
 { 
     srand(13); 
-    std::vector<Sphere> spheres; 
+    vector<Sphere> spheres; 
     // position, radius, surface color, reflectivity, transparency, emission color
     spheres.push_back(Sphere(Vec3f( 0.0, -10004, -20), 10000, Vec3f(0.20, 0.20, 0.20), 0, 0.0)); //Floor
     spheres.push_back(Sphere(Vec3f( 0.0,      0, -20),     4, Vec3f(1.00, 0.32, 0.36), 1, 0.5)); //Red
