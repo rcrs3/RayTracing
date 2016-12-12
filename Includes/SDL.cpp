@@ -1,20 +1,21 @@
 #include <fstream>
 #include "SDL.h"
 
+using namespace std;
 
-SDL::SDL(std::string path) {
-    std::ifstream ifs;
-    ifs.open (path, std::ifstream::in);
+SDL::SDL(string path) {
+    ifstream ifs;
+    ifs.open (path, ifstream::in);
     this->supersampling = false;
     while(!ifs.eof()){
         if(ifs.peek() == '\n' || ifs.peek() == ' ') {
             ifs.get();
         }
         else if(ifs.peek() == '#'){
-            ifs.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            ifs.ignore(numeric_limits<streamsize>::max(), '\n');
         }
         else {
-            std::string tag;
+            string tag;
             ifs >> tag;
             if(!tag.compare("output")){
                 ifs >> this->output;
@@ -58,7 +59,7 @@ SDL::SDL(std::string path) {
                 this->lights.push_back(light);
             }
             else if(!tag.compare("supersample")) {
-                std::string decisor;
+                string decisor;
                 ifs >> decisor;
                 decisor.compare("on") ? this->supersampling = false : this->supersampling = true;
             }
@@ -67,17 +68,7 @@ SDL::SDL(std::string path) {
             }
             else if(!tag.compare("object")){
                 Object* object = new Object();
-                ifs >> object->a
-                    >> object->b
-                    >> object->c
-                    >> object->d
-                    >> object->e
-                    >> object->f
-                    >> object->g
-                    >> object->h
-                    >> object->j
-                    >> object->k
-                    >> object->color->r
+                ifs >> object->color->r
                     >> object->color->g
                     >> object->color->b
                     >> object->ka
@@ -109,7 +100,7 @@ SDL::~SDL() {
     this->objects.clear();
 }
 
-std::string SDL::getOutput() {
+string SDL::getOutput() {
     return this->output;
 }
 
@@ -133,7 +124,7 @@ double SDL::getAmbient(){
     return this->ambient;
 }
 
-std::vector<Light*> SDL::getLights(){
+vector<Light*> SDL::getLights(){
     return this->lights;
 }
 
@@ -145,6 +136,6 @@ double SDL::getDepth(){
     return this->depth;
 }
 
-std::vector<Object*> SDL::getObjects(){
+vector<Object*> SDL::getObjects(){
     return this->objects;
 }

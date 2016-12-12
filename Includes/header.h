@@ -48,4 +48,4 @@ typedef struct object{
 } Object;
 
 #include "SDL.cpp"
-#endif //RT_HEADER_H
+#endif
