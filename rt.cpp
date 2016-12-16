@@ -2,7 +2,7 @@
 #include "Includes/header.h"
 
 #define INF 1000000000
-
+#define EPS 1e-12
 using namespace std;
 
 Size size;
@@ -24,17 +24,61 @@ T3 getDirection(int i, int j) {
     return dir;
 }
 
-T3 normalize(T3 vec) {
-	double normal;
-	normal = sqrt((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
-	vec.x /= normal;
-	vec.y /= normal;
-	vec.z /= normal;
+T3 svmpy(double s, T3 v) {
+   T3  result;// Vector structure to hold result
 
-	return vec;
+
+   result.x = s * v.x;
+   result.y = s * v.y;
+   result.z = s * v.z;
+   return result;
 }
 
-double intersect(Ray ray, Quad *obj) {
+void normalize(T3 v) {
+   double denom;// Temporary denominator
+   //  Absolute value of vector's coordinates
+
+   double x = ( v->x > 0.0 ) ? v.x : - v.x;
+   double y = ( v->y > 0.0 ) ? v.y : - v.y;
+   double z = ( v->z > 0.0 ) ? v.z : - v.z;
+
+
+   if ( x > y ) {
+      if ( x > z ) {
+         y = y / x;
+         z = z / x;
+         denom = 1.0 / ( x * sqrt( 1.0 + y * y + z * z ) );
+
+      } else { // z > x > y
+         if ( 1.0 + z > 1.0 ) {
+            y = y / z;
+            x = x / z;
+            denom = 1.0 / ( z * sqrt( 1.0 + y * y + x * x ) );
+         }
+      }
+
+   } else {
+      if ( y > z ) {
+         z = z / y;
+         x = x / y;
+         denom = 1.0 / ( y * sqrt( 1.0 + z * z + x * x ) );
+
+      } else { // x < y < z
+         if ( 1.0 + z > 1.0 ) {
+            y = y / z;
+            x = x / z;
+            denom = 1.0 / ( z * sqrt( 1.0 + y * y + x * x ) );
+         }
+      }
+   }
+
+   if ( 1.0 + x + y + z > 1.0 ) {
+      v = svmpy(denom, v);
+   }
+   return v;
+}// End procedure normalize
+
+double intersect(Ray ray, Obj *obj) {
    double  a, b, c, d, e;// Coefficents of equation of..
    double  f, g, h, j, k;// ..quadric surface
    double  acoef, bcoef, ccoef;// Intersection coefficents
@@ -56,9 +100,12 @@ double intersect(Ray ray, Quad *obj) {
    j = obj->j;
    k = obj->k;
 
-   dx = ray.dir.x - ray.org.x;
-   dy = ray.dir.y - ray.org.y;
-   dz = ray.dir.z - ray.org.z;
+   T3 norm;
+   ray.dir = normalize(ray.dir);
+
+   dx = ray.dir.x;
+   dy = ray.dir.y;
+   dz = ray.dir.z;
 
    x0 = ray.org.x;
    y0 = ray.org.y;
@@ -104,12 +151,12 @@ double intersect(Ray ray, Quad *obj) {
 }
 
 
-int objIndex() {
+int objIndex(Ray ray) {
 	int ret = -1;
 	double dist = INF, aux = -1.0;
 
 	for(int i = 0; i < objects.size(); i++) {
-		aux = 
+		aux = intersect(ray, &objects[i]);
 
 		if(aux > 0.0 && aux < dist) {
 			dist = aux;
@@ -118,6 +165,90 @@ int objIndex() {
 	}
 	if(dist != INF) return ret;
 	return -1;
+}
+
+T3 intersectPoint(Ray ray, Object obj) {
+    T3 ret = ray.dir;
+    ret = normalize(ret);
+    double distance = intersect(ray, &obj);
+    ret = ret * distance;
+    ret = ret + ray.org;
+    return ret;
+}
+
+T3 normalQuadric(Object obj, T3 p) {
+    double x = p.x;
+    double y = p.y;
+    double z = p.z;
+    double a = obj.a;
+    double b = obj.b;
+    double c = obj.c;
+    double d = obj.d;
+    double e = obj.e;
+    double f = obj.f;
+    double g = obj.g;
+    double h = obj.h;
+    double j = obj.j;
+    p.x = (2*a*x) + (2*d*y) + (2*f*z) + (2*g);
+    p.y = (2*b*y) + (2*d*x) + (2*e*z) + (2*h);
+    p.z = (2*c*z) + (2*e*y) + (2*f*x) + (2*j);
+
+    return p;
+}
+
+bool isShadow(Ray ray) {
+	for(int i = 0; i < objects.size(); i++) {
+		if(intersect(ray, &objects[i]) != -1.0) return true;
+	}
+	return false;
+}
+
+double intensityI(Ray ray, Object obj, Light light) {
+
+}
+
+double intensityD(Ray ray, Object obj, Light light) {
+	T3 iP = intersectPoint(ray, obj);
+	T3 normalObj = normalQuadric(obj, iP);
+	normalObj = normalize(normalObj);
+
+	T3 VLight = light.dir;
+	VLight = normalize(VLight);
+
+	Ray RLight = Ray(iP, VLight, 0);
+	if(!isShadow(RLight)) {
+		double cos = VLight*normalObj;
+		if(cos < 0) {
+			cos = 0;
+		}
+		double ret = light.intensity*obj.kd*cos;
+		return ret;
+	} 
+}
+
+T3 shadow(Ray ray, Object obj) {
+	T3 ret;
+	double Ia, Id, Is;
+	Ia = obj.ka*ambient;
+	Id = Is = 0.0;
+	for(int i = 0; i < lights.size(); i++) {
+		Is += 
+	}
+}
+
+T3 getColor(Ray ray) {
+	T3 ret;
+	int ind = objIndex(ray);
+	if(ind < 0) {
+		if(ray.depth == depth) {
+			ret = background;
+			return ret;
+		}
+		ret.x = ret.y = ret.z = 0.0;
+		return ret;
+	}
+	T3 color;
+	Object obj = objects[ind];
 }
 
 int main() {
@@ -139,7 +270,8 @@ int main() {
 	for(int i = 0; i < size.h; i++) {
 		for(int j = 0; i < size.w; i++) {
 			T3 dir = (getDiretion(i, j) - sdl.getEye());
-			dir = normalize(dir);
+			Ray ray = Ray(sdl.getEye(), dir, depth);
+			T3 color = getColor(ray);
 		}
 	}
 
