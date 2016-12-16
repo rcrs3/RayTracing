@@ -68,7 +68,17 @@ SDL::SDL(string path) {
             }
             else if(!tag.compare("object")){
                 Object* object = new Object();
-                ifs >> object->color->r
+                ifs >> object->a
+                    >> object->b
+                    >> object->c
+                    >> object->d
+                    >> object->e
+                    >> object->f
+                    >> object->g
+                    >> object->h
+                    >> object->j
+                    >> object->k
+                    >> object->color->r
                     >> object->color->g
                     >> object->color->b
                     >> object->ka
@@ -104,19 +114,19 @@ string SDL::getOutput() {
     return this->output;
 }
 
-T3* SDL::getEye(){
+T3 SDL::getEye(){
     return this->eye;
 }
 
-Ortho* SDL::getOrtho(){
+Ortho SDL::getOrtho(){
     return this->ortho;
 }
 
-Size* SDL::getSize(){
+Size SDL::getSize(){
     return this->size;
 }
 
-T3* SDL::getBackground(){
+T3 SDL::getBackground(){
     return this->background;
 }
 
@@ -124,7 +134,7 @@ double SDL::getAmbient(){
     return this->ambient;
 }
 
-vector<Light*> SDL::getLights(){
+vector<Light> SDL::getLights(){
     return this->lights;
 }
 
@@ -136,6 +146,6 @@ double SDL::getDepth(){
     return this->depth;
 }
 
-vector<Object*> SDL::getObjects(){
+vector<Object> SDL::getObjects(){
     return this->objects;
 }

@@ -7,24 +7,24 @@
 #include <fstream>
 #include <limits>
 
-typedef struct {
+typedef struct T3 {
     double x, y, z;
 } T3;
 
-typedef struct {
+typedef struct Color {
     double r, g, b;
 } Color;
 
-typedef struct {
+typedef struct Ortho {
     double x0, y0, x1, y1;
 } Ortho;
 
-typedef struct {
+typedef struct Size {
     int w, h;
 } Size;
 
-typedef struct light{
-    T3* coords;
+typedef struct Light {
+    T3 coords;
     double intensity;
 
     light(){
@@ -35,7 +35,7 @@ typedef struct light{
     }
 } Light;
 
-typedef struct object{
+typedef struct Object {
     double a, b, c, d, e ,f, g, h, j, k, ka, kd, ks, n, KS, KT, ir;
     Color* color;
 

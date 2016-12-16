@@ -6,30 +6,30 @@ using namespace std;
 
 class SDL {
     string output;
-    T3* eye;
-    Ortho* ortho;
+    T3 eye;
+    Ortho ortho;
     Size* size;
-    T3* background;
+    T3 background;
     double ambient;
-    vector<Light*> lights;
+    vector<Light> lights;
     bool supersampling;
     double depth;
-    vector<Object*> objects;
+    vector<Object> objects;
     void read();    //Method to read the file and fill the attribute fields
 
 public:
-    SDL(std::string path);
+    SDL(string path);
     ~SDL();
     string getOutput();
-    T3* getEye();
-    Ortho* getOrtho();
-    Size* getSize();
-    T3* getBackground();
+    T3 getEye();
+    Ortho getOrtho();
+    Size getSize();
+    T3 getBackground();
     double getAmbient();
-    vector<Light*> getLights();
+    vector<Light> getLights();
     bool getSuperSampling();
     double getDepth();
-    vector<Object*> getObjects();
+    vector<Object> getObjects();
 };
 
 
