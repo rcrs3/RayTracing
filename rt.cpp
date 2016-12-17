@@ -18,7 +18,7 @@ double w, h;
 T3 getDirection(int i, int j) {
     T3 dir;
     dir.x = (ortho.x0 + w/2) + w*j;
-    dir.y = (ortho.y1 - h/2) + h*i;
+    dir.y = (ortho.y1 - h/2) - h*i;
     dir.z = 0;
 
     return dir;
@@ -163,15 +163,14 @@ int objIndex(Ray ray) {
 			ret = i;
 		}
 	}
-	if(dist != INF) return ret;
-	return -1;
+	return ret;
 }
 
 T3 intersectPoint(Ray ray, Object obj) {
     T3 ret = ray.dir;
     ret = normalize(ret);
-    double distance = intersect(ray, &obj);
-    ret = ret * distance;
+    double dist = intersect(ray, &obj);
+    ret = ret * dist;
     ret = ret + ray.org;
     return ret;
 }
@@ -203,8 +202,30 @@ bool isShadow(Ray ray) {
 	return false;
 }
 
-double intensityI(Ray ray, Object obj, Light light) {
+double intensityS(Ray ray, Object obj, Light light) {
+	T3 iP = intersectionPoint(ray, obj);
+    T3 normalObj = normalQuadric(obj, iP);
+    normalObj = normalize(normalObj);
 
+    T3 VLight = light.dir;
+    VLight = normalize(VLight);
+
+    double c = VLight*normalObj;
+    if(c < 0) c = 0;
+    T3 r = normalObj*(2*c) - VLight;
+    r = normalize(r);
+
+    Ray RLight = Ray(iP, VLight, 0);
+    if(!isShadow(RLight)){
+        T3 v = ray.dir;
+        v = v * -1;
+        v = normalize(v);
+        double rv = r * v;
+        if(rv < 0.0) rv = 0.0;
+
+        return light.intensity * obj.ks * pow(rv, object.n);
+    }
+    return 0.0;
 }
 
 double intensityD(Ray ray, Object obj, Light light) {
@@ -217,11 +238,11 @@ double intensityD(Ray ray, Object obj, Light light) {
 
 	Ray RLight = Ray(iP, VLight, 0);
 	if(!isShadow(RLight)) {
-		double cos = VLight*normalObj;
-		if(cos < 0) {
-			cos = 0;
+		double nl = VLight*normalObj;
+		if(nl < 0) {
+			nl = 0;
 		}
-		double ret = light.intensity*obj.kd*cos;
+		double ret = light.intensity*obj.kd*nl;
 		return ret;
 	} 
 }
@@ -231,9 +252,24 @@ T3 shadow(Ray ray, Object obj) {
 	double Ia, Id, Is;
 	Ia = obj.ka*ambient;
 	Id = Is = 0.0;
+	
 	for(int i = 0; i < lights.size(); i++) {
-		Is += 
+		Id += intensityD(ray, obj, lights[i]);
+		Is += intensityI(ray, obj, lights[i]);
 	}
+
+	int aux = Ia + Id;
+	ret.x = min(obj.color.r*aux + Is, 1.0);
+	ret.y = min(obj.color.g*aux + Is, 1.0);
+	ret.z = min(obj.color.b*aux + Is, 1.0);
+
+	return ret;
+}
+
+Ray recursionRay(Ray ray, Object obj) {
+	T3 iP = intersectPoint(ray, obj);
+	T3 normalObj = normalQuadric(obj, iP);
+	normalObj = normalize(normalObj);
 }
 
 T3 getColor(Ray ray) {
@@ -247,8 +283,16 @@ T3 getColor(Ray ray) {
 		ret.x = ret.y = ret.z = 0.0;
 		return ret;
 	}
-	T3 color;
-	Object obj = objects[ind];
+	T3 color = shadow(objects[ind], ray);
+
+	T3 aux = T3(0.0, 0.0, 0.0);
+
+	if(ray.depth <= depth) {
+		if(objects[ind].KS > 0.0) {
+
+		}
+	}
+
 }
 
 int main() {

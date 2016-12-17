@@ -9,7 +9,9 @@
 
 typedef struct T3 {
     double x, y, z;
-
+    T3() {}
+    T3(double x, double y, double z) : x(x), y(y), z(z) {}
+    
      T3 operator +(const T3 &b) const {
         T3 ret;
         ret.x = x + b.x;
