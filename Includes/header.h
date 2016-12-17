@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
+#include <bits/stdc++.h>
 
 typedef struct T3 {
     double x, y, z;
@@ -74,6 +75,15 @@ typedef struct Object {
         this->color = Color();
     }
 } Object;
+
+typedef struct Obj {
+    //string name;
+    double ka, kd,ks, n, KS, KT, ir;
+    Color color;
+    Obj() {
+        this->color = Color();
+    }
+} Obj;
 
 typedef struct Ray {
     T3  org;// Origin of ray

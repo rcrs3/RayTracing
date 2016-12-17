@@ -67,8 +67,21 @@ SDL::SDL(string path) {
                 ifs >> this->depth;
             }
             else if(!tag.compare("object")){
-                Object object = Object();
-                ifs >> object.a
+                Obj o = Obj();
+               /* ifs >> o.name
+                    >> o.color.r
+                    >> o.color.g
+                    >> o.color.b
+                    >> o.ka
+                    >> o.kd
+                    >> o.ks
+                    >> o.n
+                    >> o.KS
+                    >> o.KT
+                    >> o.ir;
+                /*Object object = Object();
+                string type;
+                ifs >> object.a;
                     >> object.b
                     >> object.c
                     >> object.d
@@ -88,7 +101,7 @@ SDL::SDL(string path) {
                     >> object.KS
                     >> object.KT
                     >> object.ir;
-                this->objects.push_back(object);
+                    this->objects.push_back(object);*/
             }
         }
     }

@@ -5,8 +5,15 @@
 #define EPS 1e-12
 using namespace std;
 
+typedef pair<int, int> ii;
+typedef pair<int, ii> iii;
+typedef pair<double, double> dd;
+typedef pair<double, dd> ddd;
+
 Size size;
 Ortho ortho;
+vector<ddd> V;
+vector<iii> F;
 vector<Light> lights;
 vector<Object> objects;
 double ambient;
@@ -307,7 +314,7 @@ T3 calcColor(Ray ray) {
 }
 
 int main() {
-	SDL sdl = SDL("onesphere.sdl");
+	SDL sdl = SDL("twoplanesphere.sdl");
 
 	size = sdl.getSize();
 	ortho = sdl.getOrtho();
@@ -319,6 +326,37 @@ int main() {
 	depth = sdl.getDepth();
 	w = fabs(ortho.x1 - ortho.x0)/size.w;
 	h = fabs(ortho.y1 - ortho.y0)/size.h;
+
+	ifstream ifs;
+    ifs.open ("yoda.obj", ifstream::in);
+    int i = 0, j = 0;
+    while(!ifs.eof()) {
+    	if(ifs.peek() == '\n' || ifs.peek() == ' ') {
+            ifs.get();
+        }
+        else if(ifs.peek() == '#'){
+            ifs.ignore(numeric_limits<streamsize>::max(), '\n');
+        } else {
+        	string tag;
+        	ifs >> tag;
+        	if(!tag.compare("v")){
+                double a, b, c;
+                ifs >> a
+                	>> b
+                	>> c;
+                V.push_back(make_pair(a, ii(b, c)));
+               	i++;
+            } else if(!tag.compare("f")){
+               	int v1, v2, v3;
+                ifs >> v1
+                	>> v2
+                	>> v3;
+                F.push_back(make_pair(v1, ii(v2, v3)));
+                j++;
+            }
+        }
+    }
+    ifs.close();
 
 	ofstream ofs(sdl.getOutput(), ios::out | ios::binary); 
     ofs << "P6\n" << size.w << " " << size.h << "\n255\n";
