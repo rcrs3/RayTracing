@@ -24,16 +24,6 @@ T3 getDirection(int i, int j) {
     return dir;
 }
 
-T3 svmpy(double s, T3 v) {
-   T3  result;// Vector structure to hold result
-
-
-   result.x = s * v.x;
-   result.y = s * v.y;
-   result.z = s * v.z;
-   return result;
-}
-
 T3 normalize(T3 v) {
    double denom;// Temporary denominator
    //  Absolute value of vector's coordinates
@@ -73,7 +63,7 @@ T3 normalize(T3 v) {
    }
 
    if ( 1.0 + x + y + z > 1.0 ) {
-      v = svmpy(denom, v);
+      v = v * denom;
    }
    return v;
 }// End procedure normalize
@@ -100,7 +90,6 @@ double intersect(Ray ray, Object *obj) {
    j = obj->j;
    k = obj->k;
 
-   T3 norm;
    ray.dir = normalize(ray.dir);
 
    dx = ray.dir.x;
@@ -210,9 +199,9 @@ double intensityS(Ray ray, Object obj, Light light) {
     T3 VLight = light.coords;
     VLight = normalize(VLight);
 
-    double c = VLight&normalObj;
-    if(c < 0) c = 0;
-    T3 r = normalObj*(2*c) - VLight;
+    double c = VLight & normalObj;
+    c = max(c, 0.0);
+    T3 r = (normalObj*(2*c)) - VLight;
     r = normalize(r);
 
     Ray RLight = Ray(iP, VLight, 0);
@@ -221,7 +210,7 @@ double intensityS(Ray ray, Object obj, Light light) {
         v = v * -1;
         v = normalize(v);
         double rv = r & v;
-        if(rv < 0.0) rv = 0.0;
+        rv = max(rv, 0.0);
 
         return light.intensity * obj.ks * pow(rv, obj.n);
     }
@@ -238,13 +227,18 @@ double intensityD(Ray ray, Object obj, Light light) {
 
 	Ray RLight = Ray(iP, VLight, 0);
 	if(!isShadow(RLight)) {
-		double nl = VLight&normalObj;
-		if(nl < 0) {
-			nl = 0;
-		}
-		double ret = light.intensity*obj.kd*nl;
+		double nl = VLight & normalObj;
+		nl = max(nl, 0.0);
+		double ret = light.intensity * obj.kd * nl;
 		return ret;
-	} 
+	}
+	return 0.0; 
+}
+
+void normalizeIlumination(T3 *v) {
+	v->x = min(v->x, 1.0);
+	v->y = min(v->y, 1.0);
+	v->z = min(v->z, 1.0);
 }
 
 T3 shadow(Ray ray, Object obj) {
@@ -258,46 +252,62 @@ T3 shadow(Ray ray, Object obj) {
 		Is += intensityS(ray, obj, lights[i]);
 	}
 
-	int aux = Ia + Id;
-	ret.x = min(obj.color.r*aux + Is, 1.0);
-	ret.y = min(obj.color.g*aux + Is, 1.0);
-	ret.z = min(obj.color.b*aux + Is, 1.0);
+	double aux = Ia + Id;
+	ret.x = obj.color.r*aux + Is;
+	ret.y = obj.color.g*aux + Is;
+	ret.z = obj.color.b*aux + Is;
+
+	normalizeIlumination(&ret);
 
 	return ret;
 }
 
-Ray recursionRay(Ray ray, Object obj) {
+Ray reflection(Ray ray, Object obj) {
 	T3 iP = intersectPoint(ray, obj);
 	T3 normalObj = normalQuadric(obj, iP);
 	normalObj = normalize(normalObj);
+
+	T3 RLight = ray.dir * -1.0;
+	RLight = normalize(RLight);
+
+	double nl = RLight & normalObj;
+
+	return Ray(iP, (normalObj * (2.0 * nl)) - RLight, ray.depth+1);
 }
 
-T3 getColor(Ray ray) {
-	T3 ret;
+T3 calcColor(Ray ray) {
+	T3 color;
 	int ind = objIndex(ray);
 	if(ind < 0) {
-		if(ray.depth == depth) {
-			ret = background;
-			return ret;
+		if(ray.depth == 0) {
+			color = background;
+			return color;
 		}
-		ret.x = ret.y = ret.z = 0.0;
-		return ret;
+		color.x = color.y = color.z = 0.0;
+		return color;
 	}
-	T3 color = shadow(ray, objects[ind]);
+	color = shadow(ray, objects[ind]);
 
-	T3 aux = T3(0.0, 0.0, 0.0);
+	T3 refC = T3(0.0, 0.0, 0.0);
 
-	if(ray.depth <= depth) {
+	if(ray.depth < depth) {
 		if(objects[ind].KS > 0.0) {
-
+			Ray ref = reflection(ray, objects[ind]);
+			refC = calcColor(ref);
 		}
 	}
 
+	color.x = ((1 - objects[ind].KS - objects[ind].KT) * color.x) + (objects[ind].KS * refC.x);
+	color.y = ((1 - objects[ind].KS - objects[ind].KT) * color.y) + (objects[ind].KS * refC.y);
+	color.z = ((1 - objects[ind].KS - objects[ind].KT) * color.z) + (objects[ind].KS * refC.z);
+
+	normalizeIlumination(&color);
+
+	return color;
 }
 
 int main() {
 	SDL sdl = SDL("onesphere.sdl");
-	cout << sdl.getOutput() << endl;
 
 	size = sdl.getSize();
 	ortho = sdl.getOrtho();
@@ -310,14 +320,20 @@ int main() {
 	w = fabs(ortho.x1 - ortho.x0)/size.w;
 	h = fabs(ortho.y1 - ortho.y0)/size.h;
 
-
+	ofstream ofs(sdl.getOutput(), ios::out | ios::binary); 
+    ofs << "P6\n" << size.w << " " << size.h << "\n255\n";
+    //int k = 0;
 	for(int i = 0; i < size.h; i++) {
-		for(int j = 0; i < size.w; i++) {
-			T3 dir = (getDirection(i, j) - sdl.getEye());
-			Ray ray = Ray(sdl.getEye(), dir, depth);
-			T3 color = getColor(ray);
+		for(int j = 0; j < size.w; j++) {
+			T3 dir = getDirection(i, j) - sdl.getEye();
+			Ray ray = Ray(sdl.getEye(), dir, 0);
+			T3 color = calcColor(ray);
+			
+			ofs << (unsigned char)(color.x * 255)
+                << (unsigned char)(color.y * 255)
+                << (unsigned char)(color.z * 255);
 		}
 	}
-
+	ofs.close();
 	return 0;
 }
