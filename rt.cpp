@@ -435,7 +435,7 @@ int main() {
                 ifs >> v1
                 	>> v2
                 	>> v3;
-                F.push_back(T3(a,b,c));
+                F.push_back(T3(v1,v2,v3));
                 j++;
             }
         }
