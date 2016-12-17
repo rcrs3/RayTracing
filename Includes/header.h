@@ -19,12 +19,19 @@ typedef struct T3 {
         ret.z = z + b.z;
         return ret;
     }
-    T3 operator *(const T3 &b) const {
+    T3 operator -(const T3 &b) const {
+        T3 ret;
+        ret.x = x - b.x;
+        ret.y = y - b.y;
+        ret.z = z - b.z;
+        return ret;
+    }
+    double operator &(const T3 &b) const {
         T3 ret;
         ret.x = x * b.x;
         ret.y = y * b.y;
         ret.z = z * b.z;
-        return ret;
+        return ret.x + ret.y + ret.z;
     }
 
     T3 operator *(const double &b) const {
@@ -39,6 +46,7 @@ typedef struct T3 {
 
 typedef struct Color {
     double r, g, b;
+    Color() {}
 } Color;
 
 typedef struct Ortho {
@@ -53,23 +61,17 @@ typedef struct Light {
     T3 coords;
     double intensity;
 
-    light(){
-        this->coords = new T3();
-    }
-    ~light(){
-        delete this->coords;
+    Light(){
+        this->coords = T3();
     }
 } Light;
 
 typedef struct Object {
     double a, b, c, d, e ,f, g, h, j, k, ka, kd, ks, n, KS, KT, ir;
-    Color* color;
+    Color color;
 
-    object(){
-        this->color = new Color();
-    }
-    ~object(){
-        delete this->color;
+    Object(){
+        this->color = Color();
     }
 } Object;
 

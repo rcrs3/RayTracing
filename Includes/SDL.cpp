@@ -25,7 +25,7 @@ SDL::SDL(string path) {
                 ifs >> eye->x
                     >> eye->y
                     >> eye->z;
-                this->eye = eye;
+                this->eye = *eye;
             }
             else if(!tag.compare("ortho")){
                 Ortho* ortho = new Ortho();
@@ -33,30 +33,30 @@ SDL::SDL(string path) {
                     >> ortho->y0
                     >> ortho->x1
                     >> ortho->y1;
-                this->ortho = ortho;
+                this->ortho = *ortho;
             }
             else if(!tag.compare(("size"))){
                 Size* size = new Size();
                 ifs >> size->w
                     >> size->h;
-                this->size = size;
+                this->size = *size;
             }
             else if(!tag.compare("background")){
                 T3* background = new T3();
                 ifs >> background->x
                     >> background->y
                     >> background->z;
-                this->background = background;
+                this->background = *background;
             }
             else if(!tag.compare("ambient")){
                 ifs >> this->ambient;
             }
             else if(!tag.compare("light")){
                 Light* light = new Light();
-                ifs >> light->coords->x
-                    >> light->coords->y
-                    >> light->coords->z;
-                this->lights.push_back(light);
+                ifs >> light->coords.x
+                    >> light->coords.y
+                    >> light->coords.z;
+                this->lights.push_back(*light);
             }
             else if(!tag.compare("supersample")) {
                 string decisor;
@@ -78,9 +78,9 @@ SDL::SDL(string path) {
                     >> object->h
                     >> object->j
                     >> object->k
-                    >> object->color->r
-                    >> object->color->g
-                    >> object->color->b
+                    >> object->color.r
+                    >> object->color.g
+                    >> object->color.b
                     >> object->ka
                     >> object->kd
                     >> object->ks
@@ -88,26 +88,11 @@ SDL::SDL(string path) {
                     >> object->KS
                     >> object->KT
                     >> object->ir;
-                this->objects.push_back(object);
+                this->objects.push_back(*object);
             }
         }
     }
     ifs.close();
-}
-
-SDL::~SDL() {
-    delete this->eye;
-    delete this->background;
-    delete this->ortho;
-    delete this->size;
-    for(int i = 0; i != this->lights.size(); ++i){
-        delete this->lights[i];
-    }
-    for(int i = 0; i != this->objects.size(); ++i){
-        delete this->objects[i];
-    }
-    this->lights.clear();
-    this->objects.clear();
 }
 
 string SDL::getOutput() {

@@ -8,7 +8,7 @@ class SDL {
     string output;
     T3 eye;
     Ortho ortho;
-    Size* size;
+    Size size;
     T3 background;
     double ambient;
     vector<Light> lights;
@@ -19,7 +19,6 @@ class SDL {
 
 public:
     SDL(string path);
-    ~SDL();
     string getOutput();
     T3 getEye();
     Ortho getOrtho();

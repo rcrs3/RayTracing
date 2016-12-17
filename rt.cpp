@@ -34,13 +34,13 @@ T3 svmpy(double s, T3 v) {
    return result;
 }
 
-void normalize(T3 v) {
+T3 normalize(T3 v) {
    double denom;// Temporary denominator
    //  Absolute value of vector's coordinates
 
-   double x = ( v->x > 0.0 ) ? v.x : - v.x;
-   double y = ( v->y > 0.0 ) ? v.y : - v.y;
-   double z = ( v->z > 0.0 ) ? v.z : - v.z;
+   double x = ( v.x > 0.0 ) ? v.x : - v.x;
+   double y = ( v.y > 0.0 ) ? v.y : - v.y;
+   double z = ( v.z > 0.0 ) ? v.z : - v.z;
 
 
    if ( x > y ) {
@@ -78,7 +78,7 @@ void normalize(T3 v) {
    return v;
 }// End procedure normalize
 
-double intersect(Ray ray, Obj *obj) {
+double intersect(Ray ray, Object *obj) {
    double  a, b, c, d, e;// Coefficents of equation of..
    double  f, g, h, j, k;// ..quadric surface
    double  acoef, bcoef, ccoef;// Intersection coefficents
@@ -203,14 +203,14 @@ bool isShadow(Ray ray) {
 }
 
 double intensityS(Ray ray, Object obj, Light light) {
-	T3 iP = intersectionPoint(ray, obj);
+	T3 iP = intersectPoint(ray, obj);
     T3 normalObj = normalQuadric(obj, iP);
     normalObj = normalize(normalObj);
 
-    T3 VLight = light.dir;
+    T3 VLight = light.coords;
     VLight = normalize(VLight);
 
-    double c = VLight*normalObj;
+    double c = VLight&normalObj;
     if(c < 0) c = 0;
     T3 r = normalObj*(2*c) - VLight;
     r = normalize(r);
@@ -220,10 +220,10 @@ double intensityS(Ray ray, Object obj, Light light) {
         T3 v = ray.dir;
         v = v * -1;
         v = normalize(v);
-        double rv = r * v;
+        double rv = r & v;
         if(rv < 0.0) rv = 0.0;
 
-        return light.intensity * obj.ks * pow(rv, object.n);
+        return light.intensity * obj.ks * pow(rv, obj.n);
     }
     return 0.0;
 }
@@ -233,12 +233,12 @@ double intensityD(Ray ray, Object obj, Light light) {
 	T3 normalObj = normalQuadric(obj, iP);
 	normalObj = normalize(normalObj);
 
-	T3 VLight = light.dir;
+	T3 VLight = light.coords;
 	VLight = normalize(VLight);
 
 	Ray RLight = Ray(iP, VLight, 0);
 	if(!isShadow(RLight)) {
-		double nl = VLight*normalObj;
+		double nl = VLight&normalObj;
 		if(nl < 0) {
 			nl = 0;
 		}
@@ -255,7 +255,7 @@ T3 shadow(Ray ray, Object obj) {
 	
 	for(int i = 0; i < lights.size(); i++) {
 		Id += intensityD(ray, obj, lights[i]);
-		Is += intensityI(ray, obj, lights[i]);
+		Is += intensityS(ray, obj, lights[i]);
 	}
 
 	int aux = Ia + Id;
@@ -283,7 +283,7 @@ T3 getColor(Ray ray) {
 		ret.x = ret.y = ret.z = 0.0;
 		return ret;
 	}
-	T3 color = shadow(objects[ind], ray);
+	T3 color = shadow(ray, objects[ind]);
 
 	T3 aux = T3(0.0, 0.0, 0.0);
 
@@ -296,8 +296,8 @@ T3 getColor(Ray ray) {
 }
 
 int main() {
-	SDL* sdl = new SDL("onesphere.sdl");
-	cout << sdl->getOutput() << endl;
+	SDL sdl = SDL("onesphere.sdl");
+	cout << sdl.getOutput() << endl;
 
 	size = sdl.getSize();
 	ortho = sdl.getOrtho();
@@ -308,18 +308,16 @@ int main() {
 	superSampling = sdl.getSuperSampling();
 	depth = sdl.getDepth();
 	w = fabs(ortho.x1 - ortho.x0)/size.w;
-	h = fabs(orthor.y1 - ortho.y0)/size.h;
+	h = fabs(ortho.y1 - ortho.y0)/size.h;
 
 
 	for(int i = 0; i < size.h; i++) {
 		for(int j = 0; i < size.w; i++) {
-			T3 dir = (getDiretion(i, j) - sdl.getEye());
+			T3 dir = (getDirection(i, j) - sdl.getEye());
 			Ray ray = Ray(sdl.getEye(), dir, depth);
 			T3 color = getColor(ray);
 		}
 	}
 
-
-	delete sdl;
 	return 0;
 }
