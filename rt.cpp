@@ -96,8 +96,8 @@ typedef pair<double, dd> ddd;
 
 Size size;
 Ortho ortho;
-vector<ddd> V;
-vector<iii> F;
+vector<T3> V;
+vector<T3> F;
 vector<Light> lights;
 vector<Object> objects;
 double ambient;
@@ -428,14 +428,14 @@ int main() {
                 ifs >> a
                 	>> b
                 	>> c;
-                V.push_back(make_pair(a, ii(b, c)));
+                V.push_back(T3(a,b,c));
                	i++;
             } else if(!tag.compare("f")){
                	int v1, v2, v3;
                 ifs >> v1
                 	>> v2
                 	>> v3;
-                F.push_back(make_pair(v1, ii(v2, v3)));
+                F.push_back(T3(a,b,c));
                 j++;
             }
         }
