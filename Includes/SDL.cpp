@@ -67,41 +67,47 @@ SDL::SDL(string path) {
                 ifs >> this->depth;
             }
             else if(!tag.compare("object")){
-               // Obj o = Obj();
-               /* ifs >> o.name
-                    >> o.color.r
-                    >> o.color.g
-                    >> o.color.b
-                    >> o.ka
-                    >> o.kd
-                    >> o.ks
-                    >> o.n
-                    >> o.KS
-                    >> o.KT
-                    >> o.ir;*/
-                Object object = Object();
                 string type;
-                ifs >> object.a
-                    >> object.b
-                    >> object.c
-                    >> object.d
-                    >> object.e
-                    >> object.f
-                    >> object.g
-                    >> object.h
-                    >> object.j
-                    >> object.k
-                    >> object.color.r
-                    >> object.color.g
-                    >> object.color.b
-                    >> object.ka
-                    >> object.kd
-                    >> object.ks
-                    >> object.n
-                    >> object.KS
-                    >> object.KT
-                    >> object.ir;
-                this->objects.push_back(object);
+                ifs >> type;
+                if(type.find("obj") != -1) {
+                    Obj o = Obj();
+                    ifs >> o.color.r
+                        >> o.color.g
+                        >> o.color.b
+                        >> o.ka
+                        >> o.kd
+                        >> o.ks
+                        >> o.n
+                        >> o.KS
+                        >> o.KT
+                        >> o.ir;
+                        o.name = type;
+                        readObj(o.name);
+                } else {
+                    Object object = Object();
+                
+                    ifs >> object.b
+                        >> object.c
+                        >> object.d
+                        >> object.e
+                        >> object.f
+                        >> object.g
+                        >> object.h
+                        >> object.j
+                        >> object.k
+                        >> object.color.r
+                        >> object.color.g
+                        >> object.color.b
+                        >> object.ka
+                        >> object.kd
+                        >> object.ks
+                        >> object.n
+                        >> object.KS
+                        >> object.KT
+                        >> object.ir;
+                    object.a = stod(type);
+                    this->objects.push_back(object);
+                }
             }
         }
     }
