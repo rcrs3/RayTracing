@@ -67,7 +67,20 @@ SDL::SDL(string path) {
                 ifs >> this->depth;
             }
             else if(!tag.compare("object")){
+               // Obj o = Obj();
+               /* ifs >> o.name
+                    >> o.color.r
+                    >> o.color.g
+                    >> o.color.b
+                    >> o.ka
+                    >> o.kd
+                    >> o.ks
+                    >> o.n
+                    >> o.KS
+                    >> o.KT
+                    >> o.ir;*/
                 Object object = Object();
+                string type;
                 ifs >> object.a
                     >> object.b
                     >> object.c

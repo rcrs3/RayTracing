@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+
 using namespace std;
 
 #ifndef RT_SDLREADER_H
@@ -8,6 +10,7 @@ class SDL {
     string output;
     T3 eye;
     Ortho ortho;
+    Obj obj;
     Size size;
     T3 background;
     double ambient;
