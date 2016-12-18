@@ -15,7 +15,7 @@ int depth;
 T3 background;
 double w, h;
 
-T3 getDirection(int i, int j) {
+T3 getDirect(int i, int j) {
     T3 dir;
     dir.x = (ortho.x0 + w/2) + w*j;
     dir.y = (ortho.y1 - h/2) - h*i;
@@ -161,6 +161,7 @@ T3 intersectPoint(Ray ray, Object obj) {
     double dist = intersect(ray, &obj);
     ret = ret * dist;
     ret = ret + ray.org;
+    
     return ret;
 }
 
@@ -332,7 +333,7 @@ int main() {
 			if(superSampling) {
 				for(double subPi = i; subPi <= i + 1.0; subPi += 0.5) {
 					for(double subPj = j; subPj <= j + 1.0; subPj += 0.5) {
-						dir = getDirection(subPi, subPj) - sdl.getEye();
+						dir = getDirect(subPi, subPj) - sdl.getEye();
 						ray = Ray(sdl.getEye(), dir, depth);
 						color = color + calcColor(ray);
 					}
@@ -340,7 +341,7 @@ int main() {
 			
 				color = color/9.0;
 			} else {
-				dir = getDirection(i, j) - sdl.getEye();
+				dir = getDirect(i, j) - sdl.getEye();
 				ray = Ray(sdl.getEye(), dir, depth);
 				color = calcColor(ray);
 			}
