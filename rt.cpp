@@ -366,6 +366,20 @@ Ray reflection(Ray ray, Object obj) {
 	return Ray(iP, (normalObj * (2.0 * nl)) - RLight, ray.depth+1);
 }
 
+
+bool rayIntersectTriangle(Ray ray, T3 v1, T3 v2, T3 v3){
+    T3 v1v2 = v2 - v1;
+    T3 v1v3 = v3 - v1; //calculo da normal
+    double Nx = (v1v2.y*v1v3.z - v1v2.z*v1v3.y);
+    double Ny = (v1v2.z*v1v3.x - v1v2.x*v1v3.z);
+    double Nz = (v1v2.x*v1v3.y - v1v2.y*v1v3.x);
+    T3 N = T3(Nx, Ny, Nz); //multiplicacao de v1v2 com v1v3
+    N = normalize(N);
+    
+}
+
+
+
 T3 calcColor(Ray ray) {
 	T3 color;
 	int ind = objIndex(ray);
