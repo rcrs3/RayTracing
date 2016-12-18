@@ -272,14 +272,14 @@ Ray reflection(Ray ray, Object obj) {
 
 	double nl = RLight & normalObj;
 
-	return Ray(iP, (normalObj * (2.0 * nl)) - RLight, ray.depth+1);
+	return Ray(iP, (normalObj * (2.0 * nl)) - RLight, ray.depth-1);
 }
 
 T3 calcColor(Ray ray) {
 	T3 color;
 	int ind = objIndex(ray);
 	if(ind < 0) {
-		if(ray.depth == 0) {
+		if(ray.depth == depth) {
 			color = background;
 			return color;
 		}
@@ -290,7 +290,7 @@ T3 calcColor(Ray ray) {
 
 	T3 refC = T3(0.0, 0.0, 0.0);
 
-	if(ray.depth < depth) {
+	if(ray.depth > 0) {
 		if(objects[ind].KS > 0.0) {
 			Ray ref = reflection(ray, objects[ind]);
 			refC = calcColor(ref);
@@ -307,7 +307,7 @@ T3 calcColor(Ray ray) {
 }
 
 int main() {
-	SDL sdl = SDL("onesphere.sdl");
+	SDL sdl = SDL("twoplanesphere.sdl");
 
 	size = sdl.getSize();
 	ortho = sdl.getOrtho();
@@ -322,12 +322,28 @@ int main() {
 
 	ofstream ofs(sdl.getOutput(), ios::out | ios::binary); 
     ofs << "P6\n" << size.w << " " << size.h << "\n255\n";
-    //int k = 0;
+
 	for(int i = 0; i < size.h; i++) {
 		for(int j = 0; j < size.w; j++) {
-			T3 dir = getDirection(i, j) - sdl.getEye();
-			Ray ray = Ray(sdl.getEye(), dir, 0);
-			T3 color = calcColor(ray);
+			T3 color = T3(0.0, 0.0, 0.0);
+			T3 dir = T3();
+			Ray ray = Ray();
+
+			if(superSampling) {
+				for(double subPi = i; subPi <= i + 1.0; subPi += 0.5) {
+					for(double subPj = j; subPj <= j + 1.0; subPj += 0.5) {
+						dir = getDirection(subPi, subPj) - sdl.getEye();
+						ray = Ray(sdl.getEye(), dir, depth);
+						color = color + calcColor(ray);
+					}
+				}
+			
+				color = color/9.0;
+			} else {
+				dir = getDirection(i, j) - sdl.getEye();
+				ray = Ray(sdl.getEye(), dir, depth);
+				color = calcColor(ray);
+			}
 			
 			ofs << (unsigned char)(color.x * 255)
                 << (unsigned char)(color.y * 255)
